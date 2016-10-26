@@ -29,8 +29,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _FFDDDDIALOG_H_
-#define _FFDDDDIALOG_H_
+#ifndef _FFDDDGIVEAWAYDIALOG_H_
+#define _FFDDDGIVEAWAYDIALOG_H_
 
 #include <gtk/gtk.h>
 
@@ -43,8 +43,34 @@
 typedef struct _FfdddGiveawayDialog FfdddGiveawayDialog;
 typedef struct _FfdddGiveawayDialogClass FfdddGiveawayDialogClass;
 
+struct FfdddDate {
+	guint	year;
+	guint	month;
+	guint	day;
+};
+
+void			 ffddd_date_zero(struct FfdddDate *date);
+void			 ffddd_date_set(struct FfdddDate *date, unsigned int
+    year, unsigned int month, unsigned int day);
+
 GType			 ffddd_giveaway_dialog_get_type(void);
 FfdddGiveawayDialog	*ffddd_giveaway_dialog_new(GtkWindow *parent);
 
+gboolean
+ffddd_window_check_info_consistency(FfdddGiveawayDialog *dialog);
+void			 fffdd_giveaway_dialog_on_response(FfdddGiveawayDialog
+    *dialog, gint response_id, gpointer user_data);
 
-#endif 
+gboolean		 ffddd_get_date_dialog(struct FfdddDate *date,
+    GtkWindow *parent);
+
+void			 ffddd_get_calendar_date(GtkCalendar *calendar, struct
+    FfdddDate *date);
+
+void
+ffddd_giveaway_dialog_on_start_date_button_clicked(FfdddGiveawayDialog *dialog);
+
+void
+ffddd_giveaway_dialog_on_end_date_button_clicked(FfdddGiveawayDialog *dialog);
+
+#endif /* !_FFDDDGIVEAWAYDIALOG_H_ */
