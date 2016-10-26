@@ -44,9 +44,13 @@ struct _FfdddGiveawayDialogClass {
 typedef struct _FfdddGiveawayDialogPrivate FfdddGiveawayDialogPrivate;
 
 struct _FfdddGiveawayDialogPrivate {
-	GtkWidget		*giveaways_view;
+	GtkWidget		*food_items_view;
 	GtkWidget		*select_start_button;
 	GtkWidget		*select_end_button;
+	GtkWidget		*item_entry;
+	GtkWidget		*add_food_button;
+	GtkListStore		*food_items_store;
+
 	struct FfdddDate	start_date;
 	struct FfdddDate	end_date;
 	unsigned int		start_time; /* Start time in minutes. */
@@ -67,6 +71,8 @@ ffddd_giveaway_dialog_init(FfdddGiveawayDialog *dialog)
 	ffddd_date_zero(&(priv->start_date));
 	ffddd_date_zero(&(priv->end_date));
 
+	ffddd_giveaway_dialog_init_food_items_view(dialog);
+
 	g_signal_connect_swapped(dialog, "response",
 	    G_CALLBACK(gtk_widget_destroy), dialog);
 	g_signal_connect_swapped(priv->select_start_button, "clicked",
@@ -74,6 +80,9 @@ ffddd_giveaway_dialog_init(FfdddGiveawayDialog *dialog)
 	    dialog);
 	g_signal_connect_swapped(priv->select_end_button, "clicked",
 	    G_CALLBACK(ffddd_giveaway_dialog_on_end_date_button_clicked),
+	    dialog);
+	g_signal_connect_swapped(priv->add_food_button, "clicked",
+	    G_CALLBACK(ffddd_giveaway_dialog_on_add_item_button_clicked),
 	    dialog);
 }
 
@@ -87,6 +96,12 @@ ffddd_giveaway_dialog_class_init(FfdddGiveawayDialogClass *kclass)
 	    FfdddGiveawayDialog, select_start_button);
 	gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(kclass),
 	    FfdddGiveawayDialog, select_end_button);
+	gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(kclass),
+	    FfdddGiveawayDialog, item_entry);
+	gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(kclass),
+	    FfdddGiveawayDialog, add_food_button);
+	gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(kclass),
+	    FfdddGiveawayDialog, food_items_view);
 }
 
 FfdddGiveawayDialog *
@@ -219,4 +234,45 @@ ffddd_giveaway_dialog_on_end_date_button_clicked(FfdddGiveawayDialog *dialog)
 
 	if (!response)
 		ffddd_date_zero(&priv->end_date);
+}
+
+void
+ffddd_giveaway_dialog_init_food_items_view(FfdddGiveawayDialog *dialog)
+{
+	FfdddGiveawayDialogPrivate *priv;
+	GtkTreeView *food_items_view;
+	GtkListStore *food_items_store;
+	GtkTreeViewColumn *text_column;
+	GtkCellRenderer *text_render;
+
+	priv = ffddd_giveaway_dialog_get_instance_private(dialog);
+	/* Create a list store with 1 column, which is a string. */
+	priv->food_items_store = gtk_list_store_new(1, G_TYPE_STRING);
+
+	food_items_view = GTK_TREE_VIEW(priv->food_items_view);
+	food_items_store = GTK_LIST_STORE(priv->food_items_store);
+
+	gtk_tree_view_set_model(food_items_view,
+	    GTK_TREE_MODEL(food_items_store));
+
+	text_render = GTK_CELL_RENDERER(gtk_cell_renderer_text_new());
+
+	text_column = gtk_tree_view_column_new_with_attributes(_("Item"),
+	    text_render, "text", 0, NULL);
+
+	gtk_tree_view_append_column(food_items_view, text_column);
+}
+
+void
+ffddd_giveaway_dialog_on_add_item_button_clicked(FfdddGiveawayDialog *dialog)
+{
+	FfdddGiveawayDialogPrivate *priv;
+	const gchar *item_text;
+	GtkTreeIter iter;
+
+	priv = ffddd_giveaway_dialog_get_instance_private(dialog);
+	item_text = gtk_entry_get_text(GTK_ENTRY(priv->item_entry));
+
+	gtk_list_store_append(priv->food_items_store, &iter);
+	gtk_list_store_set(priv->food_items_store, &iter, 0, item_text, -1);
 }

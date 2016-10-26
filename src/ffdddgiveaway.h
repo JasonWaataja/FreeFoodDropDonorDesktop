@@ -29,54 +29,11 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _FFDDDGIVEAWAYDIALOG_H_
-#define _FFDDDGIVEAWAYDIALOG_H_
+#ifndef _FFDDDGIVEAWAY_H_
+#define _FFDDDGIVEAWAY_H_
 
-#include <gtk/gtk.h>
+#define FFDDD_TYPE_GIVEAWAY (ffddd_giveaway_get_type())
+#define FFDDD_GIVEAWAY(obj) (G_TYPE_CHECK_INSTANCE_CAST((obj),		      \
+	FFDDD_TYPE_GIVEAWA, FfdddGiveawa))
 
-#define FFDDD_TYPE_GIVEAWAY_DIALOG (ffddd_giveaway_dialog_get_type())
-#define FFDDD_GIVEAWAY_DIALOG(obj) (G_TYPE_CHECK_INSTANCE_CAST((obj),	      \
-	FFDDD_TYPE_GIVEAWAY_DIALOG, FfdddGiveawayDialog))
-
-#define FFDDD_GIVEAWAY_DIALOG_TITLE "FreeFoodDropDonorDesktop"
-
-typedef struct _FfdddGiveawayDialog FfdddGiveawayDialog;
-typedef struct _FfdddGiveawayDialogClass FfdddGiveawayDialogClass;
-
-struct FfdddDate {
-	guint	year;
-	guint	month;
-	guint	day;
-};
-
-void			 ffddd_date_zero(struct FfdddDate *date);
-void			 ffddd_date_set(struct FfdddDate *date, unsigned int
-    year, unsigned int month, unsigned int day);
-
-GType			 ffddd_giveaway_dialog_get_type(void);
-FfdddGiveawayDialog	*ffddd_giveaway_dialog_new(GtkWindow *parent);
-
-gboolean
-ffddd_window_check_info_consistency(FfdddGiveawayDialog *dialog);
-void			 fffdd_giveaway_dialog_on_response(FfdddGiveawayDialog
-    *dialog, gint response_id, gpointer user_data);
-
-gboolean		 ffddd_get_date_dialog(struct FfdddDate *date,
-    GtkWindow *parent);
-
-void			 ffddd_get_calendar_date(GtkCalendar *calendar, struct
-    FfdddDate *date);
-
-void
-ffddd_giveaway_dialog_on_start_date_button_clicked(FfdddGiveawayDialog *dialog);
-
-void
-ffddd_giveaway_dialog_on_end_date_button_clicked(FfdddGiveawayDialog *dialog);
-
-void
-ffddd_giveaway_dialog_init_food_items_view(FfdddGiveawayDialog *dialog);
-
-void
-ffddd_giveaway_dialog_on_add_item_button_clicked(FfdddGiveawayDialog *dialog);
-
-#endif /* !_FFDDDGIVEAWAYDIALOG_H_ */
+#endif /* !_FFDDDGIVEAWAY_H_ */
