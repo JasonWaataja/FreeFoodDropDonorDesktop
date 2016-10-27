@@ -34,6 +34,8 @@
 
 #include <gtk/gtk.h>
 
+#include "ffdddgiveaway.h"
+
 #define FFDDD_TYPE_GIVEAWAY_DIALOG (ffddd_giveaway_dialog_get_type())
 #define FFDDD_GIVEAWAY_DIALOG(obj) (G_TYPE_CHECK_INSTANCE_CAST((obj),	      \
 	FFDDD_TYPE_GIVEAWAY_DIALOG, FfdddGiveawayDialog))
@@ -43,18 +45,9 @@
 typedef struct _FfdddGiveawayDialog FfdddGiveawayDialog;
 typedef struct _FfdddGiveawayDialogClass FfdddGiveawayDialogClass;
 
-struct FfdddDate {
-	guint	year;
-	guint	month;
-	guint	day;
-};
-
-void			 ffddd_date_zero(struct FfdddDate *date);
-void			 ffddd_date_set(struct FfdddDate *date, unsigned int
-    year, unsigned int month, unsigned int day);
-
 GType			 ffddd_giveaway_dialog_get_type(void);
-FfdddGiveawayDialog	*ffddd_giveaway_dialog_new(GtkWindow *parent);
+FfdddGiveawayDialog	*ffddd_giveaway_dialog_new(GtkWindow *parent,
+    FfdddGiveaway *giveaway);
 
 gboolean
 ffddd_window_check_info_consistency(FfdddGiveawayDialog *dialog);
@@ -78,5 +71,15 @@ ffddd_giveaway_dialog_init_food_items_view(FfdddGiveawayDialog *dialog);
 
 void
 ffddd_giveaway_dialog_on_add_item_button_clicked(FfdddGiveawayDialog *dialog);
+
+FfdddGiveaway
+*ffddd_giveaway_dialog_get_giveaway(FfdddGiveawayDialog *dialog);
+
+void
+ffddd_giveaway_dialog_set_giveaway(FfdddGiveawayDialog *dialog, FfdddGiveaway
+    *giveaway);
+
+void			 ffddd_giveaway_dialog_get_gui_info(FfdddGiveawayDialog
+    *dialog, FfdddGiveaway *giveaway);
 
 #endif /* !_FFDDDGIVEAWAYDIALOG_H_ */

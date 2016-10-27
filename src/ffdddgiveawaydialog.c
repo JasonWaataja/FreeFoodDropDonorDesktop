@@ -30,8 +30,10 @@
  */
 
 #include <glib/gi18n.h>
+#include <string.h>
 
 #include "ffdddgiveawaydialog.h"
+#include "ffdddgiveaway.h"
 
 struct _FfdddGiveawayDialog {
 	GtkDialog parent;
@@ -49,16 +51,19 @@ struct _FfdddGiveawayDialogPrivate {
 	GtkWidget		*select_end_button;
 	GtkWidget		*item_entry;
 	GtkWidget		*add_food_button;
+	GtkWidget		*start_time_entry;
+	GtkWidget		*end_time_entry;
+	GtkWidget		*address_entry;
+	GtkWidget		*info_view;
 	GtkListStore		*food_items_store;
 
-	struct FfdddDate	start_date;
-	struct FfdddDate	end_date;
-	unsigned int		start_time; /* Start time in minutes. */
-	unsigned int		end_time; /* End time in minutes. */
+	FfdddGiveaway		*giveaway;
 };
 
 G_DEFINE_TYPE_WITH_PRIVATE(FfdddGiveawayDialog, ffddd_giveaway_dialog,
     GTK_TYPE_DIALOG);
+
+static void	ffddd_giveaway_dialog_dispose(GObject *giveaway);
 
 static void
 ffddd_giveaway_dialog_init(FfdddGiveawayDialog *dialog)
@@ -68,13 +73,12 @@ ffddd_giveaway_dialog_init(FfdddGiveawayDialog *dialog)
 	priv = ffddd_giveaway_dialog_get_instance_private(dialog);
 	gtk_widget_init_template(GTK_WIDGET(dialog));
 
-	ffddd_date_zero(&(priv->start_date));
-	ffddd_date_zero(&(priv->end_date));
+	priv->giveaway = NULL;
 
 	ffddd_giveaway_dialog_init_food_items_view(dialog);
 
-	g_signal_connect_swapped(dialog, "response",
-	    G_CALLBACK(gtk_widget_destroy), dialog);
+	/*g_signal_connect_swapped(dialog, "response",*/
+	    /*G_CALLBACK(gtk_widget_destroy), dialog);*/
 	g_signal_connect_swapped(priv->select_start_button, "clicked",
 	    G_CALLBACK(ffddd_giveaway_dialog_on_start_date_button_clicked),
 	    dialog);
@@ -90,6 +94,8 @@ static void
 ffddd_giveaway_dialog_class_init(FfdddGiveawayDialogClass *kclass)
 {
 
+	G_OBJECT_CLASS(kclass)->dispose = ffddd_giveaway_dialog_dispose;
+
 	gtk_widget_class_set_template_from_resource(GTK_WIDGET_CLASS(kclass),
 	    "/com/waataja/ffddd/ui/giveawaydialog.ui");
 	gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(kclass),
@@ -102,10 +108,18 @@ ffddd_giveaway_dialog_class_init(FfdddGiveawayDialogClass *kclass)
 	    FfdddGiveawayDialog, add_food_button);
 	gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(kclass),
 	    FfdddGiveawayDialog, food_items_view);
+	gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(kclass),
+	    FfdddGiveawayDialog, start_time_entry);
+	gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(kclass),
+	    FfdddGiveawayDialog, end_time_entry);
+	gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(kclass),
+	    FfdddGiveawayDialog, info_view);
+	gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(kclass),
+	    FfdddGiveawayDialog, address_entry);
 }
 
 FfdddGiveawayDialog *
-ffddd_giveaway_dialog_new(GtkWindow *window)
+ffddd_giveaway_dialog_new(GtkWindow *window, FfdddGiveaway *giveaway)
 {
 	FfdddGiveawayDialog *dialog;
 	GtkDialog *as_dialog;
@@ -120,6 +134,8 @@ ffddd_giveaway_dialog_new(GtkWindow *window)
 	gtk_window_set_transient_for(GTK_WINDOW(dialog), window);
 	gtk_window_set_modal(GTK_WINDOW(dialog), TRUE);
 
+	ffddd_giveaway_dialog_set_giveaway(dialog, giveaway);
+
 	return (dialog);
 }
 
@@ -128,10 +144,44 @@ fffdd_giveaway_dialog_on_response(FfdddGiveawayDialog *dialog, gint
     response_id, gpointer user_data)
 {
 	gboolean got_date;
-	struct FfdddDate date;
+	FfdddGiveawayDialogPrivate *priv;
+	GtkTextBuffer *info_buffer;
+	GtkTextIter start_iter, end_iter;
+	GtkTreeIter list_iter;
+	GtkTreeModel *items_store;
+	GList *temp_list;
+	gchar *temp_item;
+
+	priv = ffddd_giveaway_dialog_get_instance_private(dialog);
+
+	info_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(priv->info_view));
+	gtk_text_buffer_get_start_iter(info_buffer, &start_iter);
+	gtk_text_buffer_get_end_iter(info_buffer, &end_iter);
+
+	items_store = GTK_TREE_MODEL(priv->food_items_store);
 	
 	if (response_id == GTK_RESPONSE_OK) {
-		got_date = ffddd_get_date_dialog(&date, GTK_WINDOW(dialog));
+		/* I'm assuming the dates were already set. */
+		ffddd_giveaway_set_start_time(priv->giveaway,
+		    gtk_entry_get_text(GTK_ENTRY(priv->start_time_entry)));
+		ffddd_giveaway_set_end_time(priv->giveaway,
+		    gtk_entry_get_text(GTK_ENTRY(priv->end_time_entry)));
+		ffddd_giveaway_set_address(priv->giveaway,
+		    gtk_entry_get_text(GTK_ENTRY(priv->address_entry)));
+		ffddd_giveaway_set_info(priv->giveaway,
+		    gtk_text_buffer_get_text(info_buffer, &start_iter,
+			&end_iter, FALSE));
+
+		temp_list = NULL;
+		gtk_tree_model_get_iter_first(items_store, &list_iter);
+		while (gtk_tree_model_iter_next(items_store, &list_iter)) {
+			gtk_tree_model_get(items_store, &list_iter, 0,
+			    &temp_item, -1);
+			temp_list = g_list_append(temp_list, temp_item);
+		}
+
+		ffddd_giveaway_set_items(priv->giveaway, temp_list);
+		g_list_free_full(temp_list, (GDestroyNotify)g_free);
 	}
 
 	gtk_widget_destroy(GTK_WIDGET(dialog));
@@ -142,27 +192,6 @@ ffddd_window_check_info_consistency(FfdddGiveawayDialog *dialog)
 {
 
 	return (TRUE);
-}
-
-void
-ffddd_date_zero(struct FfdddDate *date)
-{
-
-	g_assert(date != NULL);
-	date->year = 0;
-	date->month = 0;
-	date->day = 0;
-}
-
-void
-ffddd_date_set(struct FfdddDate *date, unsigned int year, unsigned int month,
-    unsigned int day)
-{
-
-	g_assert(date != NULL);
-	date->year = year;
-	date->month = month;
-	date->day = day;
 }
 
 gboolean
@@ -213,13 +242,14 @@ ffddd_giveaway_dialog_on_start_date_button_clicked(FfdddGiveawayDialog *dialog)
 {
 	FfdddGiveawayDialogPrivate *priv;
 	gboolean response;
+	struct FfdddDate date;
 
 	priv = ffddd_giveaway_dialog_get_instance_private(dialog);
 
-	response = ffddd_get_date_dialog(&priv->start_date, GTK_WINDOW(dialog));
+	response = ffddd_get_date_dialog(&date, GTK_WINDOW(dialog));
 
-	if (!response)
-		ffddd_date_zero(&priv->start_date);
+	if (response)
+		ffddd_giveaway_set_start_date(priv->giveaway, &date);
 }
 
 void
@@ -227,13 +257,14 @@ ffddd_giveaway_dialog_on_end_date_button_clicked(FfdddGiveawayDialog *dialog)
 {
 	FfdddGiveawayDialogPrivate *priv;
 	gboolean response;
+	struct FfdddDate date;
 
 	priv = ffddd_giveaway_dialog_get_instance_private(dialog);
 
-	response = ffddd_get_date_dialog(&priv->end_date, GTK_WINDOW(dialog));
+	response = ffddd_get_date_dialog(&date, GTK_WINDOW(dialog));
 
-	if (!response)
-		ffddd_date_zero(&priv->end_date);
+	if (response)
+		ffddd_giveaway_set_end_date(priv->giveaway, &date);
 }
 
 void
@@ -273,6 +304,94 @@ ffddd_giveaway_dialog_on_add_item_button_clicked(FfdddGiveawayDialog *dialog)
 	priv = ffddd_giveaway_dialog_get_instance_private(dialog);
 	item_text = gtk_entry_get_text(GTK_ENTRY(priv->item_entry));
 
-	gtk_list_store_append(priv->food_items_store, &iter);
-	gtk_list_store_set(priv->food_items_store, &iter, 0, item_text, -1);
+	if (strlen(item_text) > 0) {
+		gtk_list_store_append(priv->food_items_store, &iter);
+		gtk_list_store_set(priv->food_items_store, &iter, 0, item_text, -1);
+	}
+}
+
+
+FfdddGiveaway *
+ffddd_giveaway_dialog_get_giveaway(FfdddGiveawayDialog *dialog)
+{
+	FfdddGiveawayDialogPrivate *priv;
+
+	priv = ffddd_giveaway_dialog_get_instance_private(dialog);
+	return (priv->giveaway);
+}
+
+void
+ffddd_giveaway_dialog_set_giveaway(FfdddGiveawayDialog *dialog, FfdddGiveaway
+    *giveaway)
+{
+	FfdddGiveawayDialogPrivate *priv;
+
+	priv = ffddd_giveaway_dialog_get_instance_private(dialog);
+	
+	g_clear_object(&priv->giveaway);
+
+	priv->giveaway = giveaway;
+	g_object_ref(giveaway);
+}
+
+static void
+ffddd_giveaway_dialog_dispose(GObject *giveaway)
+{
+	FfdddGiveawayDialogPrivate *priv;
+
+	priv =
+	    ffddd_giveaway_dialog_get_instance_private(FFDDD_GIVEAWAY_DIALOG(giveaway));
+
+	g_clear_object(&priv->giveaway);
+
+	G_OBJECT_CLASS(ffddd_giveaway_dialog_parent_class)->dispose(giveaway);
+}
+
+void
+ffddd_giveaway_dialog_get_gui_info(FfdddGiveawayDialog *dialog, FfdddGiveaway
+    *giveaway)
+{
+	gboolean got_date;
+	FfdddGiveawayDialogPrivate *priv;
+	GtkTextBuffer *info_buffer;
+	GtkTextIter start_iter, end_iter;
+	GtkTreeIter list_iter;
+	GtkTreeModel *items_store;
+	GList *temp_list;
+	gchar *temp_item;
+
+	priv = ffddd_giveaway_dialog_get_instance_private(dialog);
+
+	info_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(priv->info_view));
+	gtk_text_buffer_get_start_iter(info_buffer, &start_iter);
+	gtk_text_buffer_get_end_iter(info_buffer, &end_iter);
+
+	items_store = GTK_TREE_MODEL(priv->food_items_store);
+
+	/* I'm assuming the dates were already set. */
+	ffddd_giveaway_set_start_time(priv->giveaway,
+	    gtk_entry_get_text(GTK_ENTRY(priv->start_time_entry)));
+	ffddd_giveaway_set_end_time(priv->giveaway,
+	    gtk_entry_get_text(GTK_ENTRY(priv->end_time_entry)));
+	ffddd_giveaway_set_address(priv->giveaway,
+	    gtk_entry_get_text(GTK_ENTRY(priv->address_entry)));
+	ffddd_giveaway_set_info(priv->giveaway,
+	    gtk_text_buffer_get_text(info_buffer, &start_iter, &end_iter,
+		FALSE));
+
+	temp_list = NULL;
+	if (gtk_tree_model_get_iter_first(items_store, &list_iter)) {
+		gtk_tree_model_get(items_store, &list_iter, 0,
+		    &temp_item, -1);
+		temp_list = g_list_append(temp_list, temp_item);
+	}
+
+	while (gtk_tree_model_iter_next(items_store, &list_iter)) {
+		gtk_tree_model_get(items_store, &list_iter, 0,
+		    &temp_item, -1);
+		temp_list = g_list_append(temp_list, temp_item);
+	}
+
+	ffddd_giveaway_set_items(priv->giveaway, temp_list);
+	g_list_free_full(temp_list, (GDestroyNotify)g_free);
 }

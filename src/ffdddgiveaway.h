@@ -32,8 +32,57 @@
 #ifndef _FFDDDGIVEAWAY_H_
 #define _FFDDDGIVEAWAY_H_
 
+#include <gtk/gtk.h>
+
 #define FFDDD_TYPE_GIVEAWAY (ffddd_giveaway_get_type())
 #define FFDDD_GIVEAWAY(obj) (G_TYPE_CHECK_INSTANCE_CAST((obj),		      \
 	FFDDD_TYPE_GIVEAWA, FfdddGiveawa))
+
+typedef struct _FfdddGiveaway FfdddGiveaway;
+typedef struct _FfdddGiveawayClass FfdddGiveawayClass;
+
+struct FfdddDate {
+	guint	year;
+	guint	month;
+	guint	day;
+};
+
+void		 ffddd_date_zero(struct FfdddDate *date);
+void		 ffddd_date_set(struct FfdddDate *date, unsigned int
+    year, unsigned int month, unsigned int day);
+
+
+GType		 ffddd_giveaway_get_type(void);
+FfdddGiveaway	*ffddd_giveaway_new(void);
+
+void		 ffddd_giveaway_get_start_date(FfdddGiveaway *giveaway, struct
+    FfdddDate *date);
+void		 ffddd_giveaway_set_start_date(FfdddGiveaway *giveaway, struct
+    FfdddDate *date);
+
+void		 ffddd_giveaway_get_end_date(FfdddGiveaway *giveaway, struct
+    FfdddDate *date);
+
+void		 ffddd_giveaway_set_end_date(FfdddGiveaway *giveaway, struct
+    FfdddDate *date);
+
+const gchar	*ffddd_giveaway_get_start_time(FfdddGiveaway *giveaway);
+void		 ffddd_giveaway_set_start_time(FfdddGiveaway *giveaway, const
+    gchar *start_time);
+const gchar	*ffddd_giveaway_get_end_time(FfdddGiveaway *giveaway);
+void		 ffddd_giveaway_set_end_time(FfdddGiveaway *giveaway, const
+    gchar *end_time);
+
+GList		*ffddd_giveaway_get_items_copy(FfdddGiveaway *giveaway);
+void		 ffddd_giveaway_set_items(FfdddGiveaway *giveaway, GList
+    *items_list);
+
+const gchar	*ffddd_giveaway_get_info(FfdddGiveaway *giveaway);
+void		 ffddd_giveaway_set_info(FfdddGiveaway *giveaway, const gchar
+    *info);
+
+const gchar	*ffddd_giveaway_get_address(FfdddGiveaway *giveaway);
+void		 ffddd_giveaway_set_address(FfdddGiveaway *giveaway, const
+    gchar *address);
 
 #endif /* !_FFDDDGIVEAWAY_H_ */
