@@ -215,15 +215,14 @@ ffddd_get_date_dialog(struct FfdddDate *date, GtkWindow *parent)
 	gtk_container_add(content_area, calendar);
 	gtk_widget_set_visible(calendar, TRUE);
 
-	g_signal_connect_swapped(as_dialog, "response",
-	    G_CALLBACK(gtk_widget_destroy), as_dialog);
-
 	response_id = gtk_dialog_run(as_dialog);
 
 	if (response_id == GTK_RESPONSE_OK) {
 		ffddd_get_calendar_date(GTK_CALENDAR(calendar), date);
+		gtk_widget_destroy(dialog);
 		return (TRUE);
 	} else {
+		gtk_widget_destroy(dialog);
 		return (FALSE);
 	}
 }
@@ -307,6 +306,7 @@ ffddd_giveaway_dialog_on_add_item_button_clicked(FfdddGiveawayDialog *dialog)
 	if (strlen(item_text) > 0) {
 		gtk_list_store_append(priv->food_items_store, &iter);
 		gtk_list_store_set(priv->food_items_store, &iter, 0, item_text, -1);
+		gtk_entry_set_text(GTK_ENTRY(priv->item_entry), _(""));
 	}
 }
 
