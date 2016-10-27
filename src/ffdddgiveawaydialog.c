@@ -215,15 +215,14 @@ ffddd_get_date_dialog(struct FfdddDate *date, GtkWindow *parent)
 	gtk_container_add(content_area, calendar);
 	gtk_widget_set_visible(calendar, TRUE);
 
-	g_signal_connect_swapped(as_dialog, "response",
-	    G_CALLBACK(gtk_widget_destroy), as_dialog);
-
 	response_id = gtk_dialog_run(as_dialog);
 
 	if (response_id == GTK_RESPONSE_OK) {
 		ffddd_get_calendar_date(GTK_CALENDAR(calendar), date);
+		gtk_widget_destroy(dialog);
 		return (TRUE);
 	} else {
+		gtk_widget_destroy(dialog);
 		return (FALSE);
 	}
 }
