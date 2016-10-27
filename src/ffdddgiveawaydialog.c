@@ -307,6 +307,7 @@ ffddd_giveaway_dialog_on_add_item_button_clicked(FfdddGiveawayDialog *dialog)
 	if (strlen(item_text) > 0) {
 		gtk_list_store_append(priv->food_items_store, &iter);
 		gtk_list_store_set(priv->food_items_store, &iter, 0, item_text, -1);
+		gtk_entry_set_text(GTK_ENTRY(priv->item_entry), _(""));
 	}
 }
 
