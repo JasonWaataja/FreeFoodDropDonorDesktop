@@ -51,8 +51,6 @@ FfdddGiveawayDialog	*ffddd_giveaway_dialog_new(GtkWindow *parent,
 
 gboolean
 ffddd_window_check_info_consistency(FfdddGiveawayDialog *dialog);
-void			 fffdd_giveaway_dialog_on_response(FfdddGiveawayDialog
-    *dialog, gint response_id, gpointer user_data);
 
 gboolean		 ffddd_get_date_dialog(struct FfdddDate *date,
     GtkWindow *parent);
