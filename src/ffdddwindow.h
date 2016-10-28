@@ -54,4 +54,6 @@ void		 ffddd_window_about_activated(GSimpleAction *action, GVariant
 void		 ffddd_window_add_new_giveaway(FfdddWindow *win);
 void		 ffddd_window_init_giveaways_view(FfdddWindow *win);
 
+void		 ffddd_window_on_send_button_clicked(FfdddWindow *window);
+
 #endif /* _FFDDDWINDOW_H_ */
