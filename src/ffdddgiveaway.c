@@ -47,6 +47,7 @@ struct _FfdddGiveawayPrivate {
 	gchar	*start_time;
 	gchar	*end_time;
 	gchar	*address;
+	gchar	*name;
 	gchar	*info;
 	GList	*items_list;
 };
@@ -66,6 +67,7 @@ ffddd_giveaway_init(FfdddGiveaway *giveaway)
 	priv->start_time = NULL;
 	priv->end_time = NULL;
 	priv->address = NULL;
+	priv->name = NULL;
 	priv->info = NULL;
 	priv->items_list = NULL;
 };
@@ -274,4 +276,23 @@ ffddd_giveaway_set_address(FfdddGiveaway *giveaway, const gchar *address)
 	priv = ffddd_giveaway_get_instance_private(giveaway);
 	g_free(priv->address);
 	priv->address = g_strdup(address);
+}
+
+const gchar *
+ffddd_giveaway_get_name(FfdddGiveaway *giveaway)
+{
+	FfdddGiveawayPrivate *priv;
+
+	priv = ffddd_giveaway_get_instance_private(giveaway);
+	return (priv->name);
+}
+
+void
+ffddd_giveaway_set_name(FfdddGiveaway *giveaway, const gchar *name)
+{
+	FfdddGiveawayPrivate *priv;
+
+	priv = ffddd_giveaway_get_instance_private(giveaway);
+	g_free(priv->name);
+	priv->name = g_strdup(name);
 }

@@ -55,6 +55,7 @@ struct _FfdddGiveawayDialogPrivate {
 	GtkWidget		*end_time_entry;
 	GtkWidget		*address_entry;
 	GtkWidget		*info_view;
+	GtkWidget		*name_entry;
 	GtkListStore		*food_items_store;
 
 	FfdddGiveaway		*giveaway;
@@ -116,6 +117,8 @@ ffddd_giveaway_dialog_class_init(FfdddGiveawayDialogClass *kclass)
 	    FfdddGiveawayDialog, info_view);
 	gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(kclass),
 	    FfdddGiveawayDialog, address_entry);
+	gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(kclass),
+	    FfdddGiveawayDialog, name_entry);
 }
 
 FfdddGiveawayDialog *
@@ -341,6 +344,8 @@ ffddd_giveaway_dialog_get_gui_info(FfdddGiveawayDialog *dialog, FfdddGiveaway
 	    gtk_entry_get_text(GTK_ENTRY(priv->end_time_entry)));
 	ffddd_giveaway_set_address(priv->giveaway,
 	    gtk_entry_get_text(GTK_ENTRY(priv->address_entry)));
+	ffddd_giveaway_set_name(priv->giveaway,
+	    gtk_entry_get_text(GTK_ENTRY(priv->name_entry)));
 	ffddd_giveaway_set_info(priv->giveaway,
 	    gtk_text_buffer_get_text(info_buffer, &start_iter, &end_iter,
 		FALSE));

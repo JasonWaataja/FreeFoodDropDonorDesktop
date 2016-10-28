@@ -86,4 +86,7 @@ const gchar	*ffddd_giveaway_get_address(FfdddGiveaway *giveaway);
 void		 ffddd_giveaway_set_address(FfdddGiveaway *giveaway, const
     gchar *address);
 
+const gchar	*ffddd_giveaway_get_name(FfdddGiveaway *giveaway); void
+ffddd_giveaway_set_name(FfdddGiveaway *giveaway, const gchar *address);
+
 #endif /* !_FFDDDGIVEAWAY_H_ */
