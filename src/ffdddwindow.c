@@ -98,7 +98,7 @@ ffddd_window_class_init(FfdddWindowClass *kclass)
 	gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(kclass),
 	    FfdddWindow, giveaways_view);
 	gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(kclass),
-	    FfdddWindow, giveaways_view);
+	    FfdddWindow, send_button);
 }
 
 FfdddWindow *
@@ -256,4 +256,21 @@ ffddd_window_init_giveaways_view(FfdddWindow *win)
 void
 ffddd_window_on_send_button_clicked(FfdddWindow *window)
 {
+	FfdddWindowPrivate *priv;
+	GtkWidget *dialog;
+	int giveaway_count;
+
+	priv = ffddd_window_get_instance_private(window);
+	giveaway_count =
+	    gtk_tree_model_iter_n_children(GTK_TREE_MODEL(priv->giveaways_store),
+		NULL);
+
+	if (giveaway_count == 0) {
+		dialog = gtk_message_dialog_new(GTK_WINDOW(window),
+		    GTK_DIALOG_MODAL, GTK_MESSAGE_WARNING, GTK_BUTTONS_OK,
+		    _("You have to have at least one giveaway to send."));
+		gtk_dialog_run(GTK_DIALOG(dialog));
+		gtk_widget_destroy(dialog);
+		return;
+	}
 }
