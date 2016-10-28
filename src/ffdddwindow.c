@@ -48,7 +48,7 @@ struct _FfdddWindowPrivate {
 	GtkWidget	*add_giveaway_button;
 	GtkWidget	*giveaways_view;
 
-	GtkListStore	*giveaways_store;
+	GtkTreeStore	*giveaways_store;
 };
 
 G_DEFINE_TYPE_WITH_PRIVATE(FfdddWindow, ffddd_window,
@@ -62,9 +62,9 @@ static GActionEntry win_entries[] = {
 enum results_view_cols {
     ADDRESS_COLUMN = 0,
     NAME_COLUMN,
-    FOOD_COLUMN,
     TIME_COLUMN,
     EXTRA_COLUMN,
+    FOOD_COLUMN,
     N_COLUMNS
 };
 
@@ -136,15 +136,14 @@ ffddd_window_add_new_giveaway(FfdddWindow *win)
 	FfdddGiveaway *giveaway;
 	const gchar *address, *start_time, *end_time, *info;
 	GList *temp_list;
-	gchar *items_str;
 	gchar *temp_str;
 	gchar *full_time_string;
 	struct FfdddDate start_date;
 	struct FfdddDate end_date;
-	gboolean on_first;
 	FfdddWindowPrivate *priv;
-	GtkListStore *giveaways_store;
+	GtkTreeStore *giveaways_store;
 	GtkTreeIter tree_iter;
+	GtkTreeIter child_iter;
 	gint response;
 
 	priv = ffddd_window_get_instance_private(win);
@@ -163,35 +162,27 @@ ffddd_window_add_new_giveaway(FfdddWindow *win)
 		info = ffddd_giveaway_get_info(giveaway);
 		address = ffddd_giveaway_get_address(giveaway);
 
-		temp_list = ffddd_giveaway_get_items_copy(giveaway);
-		for (on_first = TRUE; temp_list != NULL; temp_list =
-		    g_list_next(temp_list)) {
-			if (on_first) {
-				items_str = g_strdup(temp_list->data);
-				on_first = FALSE;
-			} else {
-				temp_str = items_str;
-				items_str = g_strconcat(temp_str, "\n",
-				    temp_list->data, NULL);
-				g_free(temp_str);
-			}
-		}
-		g_list_free_full(temp_list, (GDestroyNotify)g_free);
 
 		ffddd_giveaway_get_start_date(giveaway, &start_date);
 		ffddd_giveaway_get_end_date(giveaway, &end_date);
-		full_time_string = g_strdup_printf("%u/%u/%u, %s - %u/%u/%u, %s",
+		full_time_string = g_strdup_printf("%u-%u-%u, %s - %u-%u-%u, %s",
 		    start_date.year, start_date.month, start_date.day,
 		    start_time, end_date.year, end_date.month, end_date.day,
 		    end_time);
 
-		gtk_list_store_append(giveaways_store, &tree_iter);
-		gtk_list_store_set(giveaways_store, &tree_iter, ADDRESS_COLUMN,
-		    address, NAME_COLUMN, _("Temp Name"), FOOD_COLUMN,
-		    items_str, TIME_COLUMN, full_time_string, EXTRA_COLUMN,
-		    info, -1);
+		gtk_tree_store_append(giveaways_store, &tree_iter, NULL);
+		gtk_tree_store_set(giveaways_store, &tree_iter, ADDRESS_COLUMN,
+		    address, NAME_COLUMN, _("Temp Name"), TIME_COLUMN,
+		    full_time_string, EXTRA_COLUMN, info, -1);
 
-		g_free(items_str);
+		temp_list = ffddd_giveaway_get_items_copy(giveaway);
+		for (; temp_list != NULL; temp_list = g_list_next(temp_list)) {
+			gtk_tree_store_append(giveaways_store, &child_iter,
+			    &tree_iter);
+			gtk_tree_store_set(giveaways_store, &child_iter,
+			    FOOD_COLUMN, temp_list->data, -1);
+		}
+		g_list_free_full(temp_list, (GDestroyNotify)g_free);
 		g_free(full_time_string);
 	}
 
@@ -212,7 +203,7 @@ ffddd_window_init_giveaways_view(FfdddWindow *win)
 	GtkCellRenderer *text_render;
 
 	priv = ffddd_window_get_instance_private(win);
-	priv->giveaways_store = gtk_list_store_new(N_COLUMNS, G_TYPE_STRING,
+	priv->giveaways_store = gtk_tree_store_new(N_COLUMNS, G_TYPE_STRING,
 	    G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 	gtk_tree_view_set_model(GTK_TREE_VIEW(priv->giveaways_view),
 	    GTK_TREE_MODEL(priv->giveaways_store));
@@ -227,10 +218,6 @@ ffddd_window_init_giveaways_view(FfdddWindow *win)
 	    text_render, "text", NAME_COLUMN, NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(priv->giveaways_view),
 	    name_col);
-	food_col = gtk_tree_view_column_new_with_attributes(_("Food"),
-	    text_render, "text", FOOD_COLUMN, NULL);
-	gtk_tree_view_append_column(GTK_TREE_VIEW(priv->giveaways_view),
-	    food_col);
 	time_col = gtk_tree_view_column_new_with_attributes(_("Time"),
 	    text_render, "text", TIME_COLUMN, NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(priv->giveaways_view),
@@ -239,4 +226,8 @@ ffddd_window_init_giveaways_view(FfdddWindow *win)
 	    text_render, "text", EXTRA_COLUMN, NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(priv->giveaways_view),
 	    extra_col);
+	food_col = gtk_tree_view_column_new_with_attributes(_("Food"),
+	    text_render, "text", FOOD_COLUMN, NULL);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(priv->giveaways_view),
+	    food_col);
 }
