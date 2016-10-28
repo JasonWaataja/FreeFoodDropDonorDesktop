@@ -160,30 +160,35 @@ ffddd_window_add_new_giveaway(FfdddWindow *win)
 		start_time = ffddd_giveaway_get_start_time(giveaway);
 		end_time = ffddd_giveaway_get_end_time(giveaway);
 		info = ffddd_giveaway_get_info(giveaway);
-		address = ffddd_giveaway_get_address(giveaway);
 
+		if (strlen(address) != 0 && strlen(start_time) != 0 &&
+		    strlen(end_time) != 0) {
+			ffddd_giveaway_get_start_date(giveaway, &start_date);
+			ffddd_giveaway_get_end_date(giveaway, &end_date);
+			full_time_string = g_strdup_printf("%u-%u-%u, %s to %u"
+			    "-%u-%u, %s", start_date.year, start_date.month,
+			    start_date.day, start_time, end_date.year,
+			    end_date.month, end_date.day, end_time);
 
-		ffddd_giveaway_get_start_date(giveaway, &start_date);
-		ffddd_giveaway_get_end_date(giveaway, &end_date);
-		full_time_string = g_strdup_printf("%u-%u-%u, %s - %u-%u-%u, %s",
-		    start_date.year, start_date.month, start_date.day,
-		    start_time, end_date.year, end_date.month, end_date.day,
-		    end_time);
+			gtk_tree_store_append(giveaways_store, &tree_iter,
+			    NULL);
+			gtk_tree_store_set(giveaways_store, &tree_iter,
+			    ADDRESS_COLUMN, address, NAME_COLUMN,
+			    _("Temp Name"), TIME_COLUMN, full_time_string,
+			    EXTRA_COLUMN, info, -1);
 
-		gtk_tree_store_append(giveaways_store, &tree_iter, NULL);
-		gtk_tree_store_set(giveaways_store, &tree_iter, ADDRESS_COLUMN,
-		    address, NAME_COLUMN, _("Temp Name"), TIME_COLUMN,
-		    full_time_string, EXTRA_COLUMN, info, -1);
-
-		temp_list = ffddd_giveaway_get_items_copy(giveaway);
-		for (; temp_list != NULL; temp_list = g_list_next(temp_list)) {
-			gtk_tree_store_append(giveaways_store, &child_iter,
-			    &tree_iter);
-			gtk_tree_store_set(giveaways_store, &child_iter,
-			    FOOD_COLUMN, temp_list->data, -1);
+			temp_list = ffddd_giveaway_get_items_copy(giveaway);
+			for (; temp_list != NULL; temp_list =
+			    g_list_next(temp_list)) {
+				gtk_tree_store_append(giveaways_store,
+				    &child_iter, &tree_iter);
+				gtk_tree_store_set(giveaways_store,
+				    &child_iter, FOOD_COLUMN, temp_list->data,
+				    -1);
+			}
+			g_list_free_full(temp_list, (GDestroyNotify)g_free);
+			g_free(full_time_string);
 		}
-		g_list_free_full(temp_list, (GDestroyNotify)g_free);
-		g_free(full_time_string);
 	}
 
 	gtk_widget_destroy(GTK_WIDGET(dialog));
