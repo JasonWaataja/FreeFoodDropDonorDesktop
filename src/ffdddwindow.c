@@ -145,6 +145,7 @@ ffddd_window_add_new_giveaway(FfdddWindow *win)
 	GtkTreeIter tree_iter;
 	GtkTreeIter child_iter;
 	gint response;
+	struct FfdddDate zero_date;
 
 	priv = ffddd_window_get_instance_private(win);
 	giveaways_store = priv->giveaways_store;
@@ -161,10 +162,17 @@ ffddd_window_add_new_giveaway(FfdddWindow *win)
 		end_time = ffddd_giveaway_get_end_time(giveaway);
 		info = ffddd_giveaway_get_info(giveaway);
 
+		ffddd_giveaway_get_start_date(giveaway, &start_date);
+		ffddd_giveaway_get_end_date(giveaway, &end_date);
+
+		temp_list = ffddd_giveaway_get_items_copy(giveaway);
+
+		ffddd_date_zero(&zero_date);
 		if (strlen(address) != 0 && strlen(start_time) != 0 &&
-		    strlen(end_time) != 0) {
-			ffddd_giveaway_get_start_date(giveaway, &start_date);
-			ffddd_giveaway_get_end_date(giveaway, &end_date);
+		    strlen(end_time) != 0 && !ffddd_date_equal(&start_date,
+			&zero_date) && !ffddd_date_equal(&end_date,
+			&zero_date) && temp_list != NULL) {
+
 			full_time_string = g_strdup_printf("%u-%u-%u, %s to %u"
 			    "-%u-%u, %s", start_date.year, start_date.month,
 			    start_date.day, start_time, end_date.year,
@@ -177,7 +185,6 @@ ffddd_window_add_new_giveaway(FfdddWindow *win)
 			    _("Temp Name"), TIME_COLUMN, full_time_string,
 			    EXTRA_COLUMN, info, -1);
 
-			temp_list = ffddd_giveaway_get_items_copy(giveaway);
 			for (; temp_list != NULL; temp_list =
 			    g_list_next(temp_list)) {
 				gtk_tree_store_append(giveaways_store,
@@ -186,6 +193,9 @@ ffddd_window_add_new_giveaway(FfdddWindow *win)
 				    &child_iter, FOOD_COLUMN, temp_list->data,
 				    -1);
 			}
+
+			gtk_tree_view_expand_all(GTK_TREE_VIEW(priv->giveaways_view));
+
 			g_list_free_full(temp_list, (GDestroyNotify)g_free);
 			g_free(full_time_string);
 		}

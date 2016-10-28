@@ -50,6 +50,7 @@ struct FfdddDate {
 void		 ffddd_date_zero(struct FfdddDate *date);
 void		 ffddd_date_set(struct FfdddDate *date, unsigned int
     year, unsigned int month, unsigned int day);
+gboolean	 ffddd_date_equal(struct FfdddDate *d1, struct FfdddDate *d2);
 
 
 GType		 ffddd_giveaway_get_type(void);
