@@ -223,6 +223,9 @@ ffddd_window_init_giveaways_view(FfdddWindow *win)
 	gtk_tree_view_set_model(GTK_TREE_VIEW(priv->giveaways_view),
 	    GTK_TREE_MODEL(priv->giveaways_store));
 
+	gtk_tree_view_set_show_expanders(GTK_TREE_VIEW(priv->giveaways_view),
+	    FALSE);
+
 	text_render = GTK_CELL_RENDERER(gtk_cell_renderer_text_new());
 
 	address_col = gtk_tree_view_column_new_with_attributes(_("Address"),
