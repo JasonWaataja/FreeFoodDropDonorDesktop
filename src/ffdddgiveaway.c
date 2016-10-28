@@ -103,35 +103,15 @@ ffddd_date_set(struct FfdddDate *date, unsigned int year, unsigned int month,
 	date->day = day;
 }
 
-void		 ffddd_giveaway_get_start_date(FfdddGiveaway *giveaway, struct
-    FfdddDate *date);
-void		 ffddd_giveaway_set_start_date(FfdddGiveaway *giveaway, struct
-    FfdddDate *date);
+gboolean
+ffddd_date_equal(struct FfdddDate *d1, struct FfdddDate *d2)
+{
 
-void		 ffddd_giveaway_get_end_date(FfdddGiveaway *giveaway, struct
-    FfdddDate *date);
+	g_assert(d1 != NULL && d2 != NULL);
 
-void		 ffddd_giveaway_set_end_date(FfdddGiveaway *giveaway, struct
-    FfdddDate *date);
-
-const gchar	*ffddd_giveaway_get_start_time(FfdddGiveaway *giveaway);
-void		 ffddd_giveaway_set_start_time(FfdddGiveaway *giveaway, const
-    gchar *start_time);
-const gchar	*ffddd_giveaway_get_end_time(FfdddGiveaway *giveaway);
-void		 ffddd_giveaway_set_end_time(FfdddGiveaway *giveaway, const
-    gchar *end_time);
-
-GList		*ffddd_giveaway_get_items_copy(FfdddGiveaway *giveaway);
-void		 ffddd_giveaway_set_items(FfdddGiveaway *giveaway, GList
-    *items_list);
-
-const gchar	*ffddd_giveaway_get_info(FfdddGiveaway *giveaway);
-void		 ffddd_giveaway_set_info(FfdddGiveaway *giveaway, const gchar
-    *info);
-
-const gchar	*ffddd_giveaway_get_address(FfdddGiveaway *giveaway);
-void		 ffddd_giveaway_set_address(FfdddGiveaway *giveaway, const
-    gchar *address);
+	return (d1->year == d2->year && d1->month == d2->month && d1->day ==
+	    d2->day);
+}
 
 void
 ffddd_giveaway_get_start_date(FfdddGiveaway *giveaway, struct FfdddDate *date)
