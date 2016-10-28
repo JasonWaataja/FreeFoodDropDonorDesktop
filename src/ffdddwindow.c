@@ -47,6 +47,7 @@ typedef struct _FfdddWindowPrivate FfdddWindowPrivate;
 struct _FfdddWindowPrivate {
 	GtkWidget	*add_giveaway_button;
 	GtkWidget	*giveaways_view;
+	GtkWidget	*send_button;
 
 	GtkTreeStore	*giveaways_store;
 };
@@ -80,6 +81,8 @@ ffddd_window_init(FfdddWindow *win)
 
 	g_signal_connect_swapped(priv->add_giveaway_button, "clicked",
 	    G_CALLBACK(ffddd_window_add_new_giveaway), win);
+	g_signal_connect_swapped(priv->send_button, "clicked",
+	    G_CALLBACK(ffddd_window_on_send_button_clicked), win);
 
 	g_action_map_add_action_entries(G_ACTION_MAP(win), win_entries,
 	    G_N_ELEMENTS(win_entries), win);
@@ -92,6 +95,8 @@ ffddd_window_class_init(FfdddWindowClass *kclass)
 	    "/com/waataja/ffddd/ui/mainwindow.ui");
 	gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(kclass),
 	    FfdddWindow, add_giveaway_button);
+	gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(kclass),
+	    FfdddWindow, giveaways_view);
 	gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(kclass),
 	    FfdddWindow, giveaways_view);
 }
@@ -246,4 +251,9 @@ ffddd_window_init_giveaways_view(FfdddWindow *win)
 	    text_render, "text", FOOD_COLUMN, NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(priv->giveaways_view),
 	    food_col);
+}
+
+void
+ffddd_window_on_send_button_clicked(FfdddWindow *window)
+{
 }
