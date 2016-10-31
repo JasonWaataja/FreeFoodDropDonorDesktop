@@ -38,6 +38,7 @@
 
 #include <err.h>
 #include <errno.h>
+#include <curl/curl.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
@@ -101,4 +102,41 @@ ffddd_connection_error_quark()
 {
 
 	return (g_quark_from_static_string("ffddd-connection-error-quark"));
+}
+
+int
+ffddd_get_location(const char *address, double *lat, double *lon)
+{
+	CURL *curl;
+	CURLcode res;
+	char *addr_formatted, *current_char, *query_str;
+
+
+	curl = curl_easy_init();
+
+	if (curl == NULL) {
+		warn(_("Failed to init CURL"));
+		return (-1);
+	}
+
+	curl_easy_setopt(curl, CURLOPT_URL, FFDDD_GOOGLE_URL);
+
+	/* Replace instances of " " with "+". */
+	addr_formatted = g_strdup(address);
+	for (current_char = &addr_formatted[0]; current_char != '\0';
+	    current_char++) {
+		if (*current_char == ' ')
+			*current_char = '+';
+	}
+
+	query_str = g_strconcat("address", addr_formatted, "&key=",
+	    FFDDD_GOOGLE_KEY, NULL);
+
+	curl_easy_setopt(curl, CURLOPT_POSTFIELDS, query_str);
+
+	res = curl_easy_perform(curl);
+
+	g_free(addr_formatted);
+
+	return (-1);
 }

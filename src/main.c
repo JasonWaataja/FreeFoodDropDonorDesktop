@@ -30,6 +30,7 @@
  */
 
 #include <stdio.h>
+#include <curl/curl.h>
 
 #include "ffdddapplication.h"
 
@@ -39,9 +40,13 @@ main(int argc, char *argv[])
 	FfdddApplication *app;
 	int status;
 
+	curl_global_init(CURL_GLOBAL_ALL);
+
 	app = ffddd_application_new();
 	status = g_application_run(G_APPLICATION(app), argc, argv);
 	g_object_unref(G_OBJECT(app));
+
+	curl_global_cleanup();
 
 	return (status);
 }

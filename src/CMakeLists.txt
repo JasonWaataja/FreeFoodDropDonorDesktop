@@ -17,3 +17,7 @@ include_directories (${GTK3_INCLUDE_DIRS})
 link_directories (${GTK3_LIBRARY_DIRS})
 add_definitions (${GTK3_CFLAGS_OTHER})
 target_link_libraries (ffddd ${GTK3_LIBRARIES})
+
+include (FindCURL)
+include_directories (${CURL_INCLUDE_DIRS})
+target_link_libraries (ffddd ${CURL_LIBRARIES})
