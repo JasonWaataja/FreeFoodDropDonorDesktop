@@ -36,7 +36,7 @@
 
 #define	FFDDD_SERVER_ADDRESS "127.0.0.1"
 #define FFDDD_SERVER_PORT "8111"
-#define FFDDD_GOOGLE_URL "http://maps.googleapis.com/maps/api/geocode/json"
+#define FFDDD_GOOGLE_URL "https://maps.googleapis.com/maps/api/geocode/json"
 #define FFDDD_GOOGLE_KEY "AIzaSyBHJZR3rqsqZoB7Na1ATfJH9bQEHyARU78"
 
 #define FFDDD_CONNECTION_ERROR ffddd_connection_error_quark()
@@ -51,5 +51,7 @@ int	ffddd_open_socket(GError **err);
 GQuark	ffddd_connection_error_quark();
 
 int	ffddd_get_location(const char *address, double *lat, double *lon);
+size_t	ffddd_curl_write_func(void *buf, size_t size, size_t nmemb, char
+    **message); 
 
 #endif /* !_NETWORKING_H_ */

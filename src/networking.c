@@ -109,8 +109,10 @@ ffddd_get_location(const char *address, double *lat, double *lon)
 {
 	CURL *curl;
 	CURLcode res;
-	char *addr_formatted, *current_char, *query_str;
-
+	char *addr_formatted, *current_char, *query_str, *return_str;
+	GList *lines;
+	gchar **line_array;
+	gchar *curr_line;
 
 	curl = curl_easy_init();
 
@@ -119,24 +121,61 @@ ffddd_get_location(const char *address, double *lat, double *lon)
 		return (-1);
 	}
 
-	curl_easy_setopt(curl, CURLOPT_URL, FFDDD_GOOGLE_URL);
+	/*curl_easy_setopt(curl, CURLOPT_URL, FFDDD_GOOGLE_URL);*/
+	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, ffddd_curl_write_func);
+	return_str = NULL;
+	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &return_str);
 
 	/* Replace instances of " " with "+". */
 	addr_formatted = g_strdup(address);
-	for (current_char = &addr_formatted[0]; current_char != '\0';
+	for (current_char = &addr_formatted[0]; *current_char != '\0';
 	    current_char++) {
 		if (*current_char == ' ')
 			*current_char = '+';
 	}
 
-	query_str = g_strconcat("address", addr_formatted, "&key=",
+	query_str = g_strconcat(FFDDD_GOOGLE_URL, "?address=", addr_formatted, "&key=",
 	    FFDDD_GOOGLE_KEY, NULL);
 
-	curl_easy_setopt(curl, CURLOPT_POSTFIELDS, query_str);
+	curl_easy_setopt(curl, CURLOPT_URL, query_str);
 
 	res = curl_easy_perform(curl);
 
-	g_free(addr_formatted);
+	if (res != CURLE_OK) {
+		g_printerr(_("Failed to retrieve latitude and longitude: %s"),
+		    curl_easy_strerror(res));
+		g_free(addr_formatted);
+		g_free(query_str);
+		curl_easy_cleanup(curl);
+		return (-1);
+	}
 
-	return (-1);
+	lines = NULL;
+	printf("%s\n", return_str);
+
+	curl_easy_cleanup(curl);
+
+	g_free(addr_formatted);
+	g_free(query_str);
+
+	return (1);
+}
+
+size_t
+ffddd_curl_write_func(void *buf, size_t size, size_t nmemb, char **message)
+{
+	size_t cur_len, new_len;
+
+	g_assert(message != NULL);
+	cur_len = (*message != NULL) ? strlen(*message) : 0;
+	new_len = cur_len + (size * nmemb);
+
+	*message = g_realloc(*message, new_len + 1);
+	if (*message == NULL)
+		err(1, NULL);
+
+	memcpy(*message + cur_len, buf, size * nmemb);
+	(*message)[new_len] = '\0';
+
+	return (size * nmemb);
 }
