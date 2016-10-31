@@ -37,6 +37,7 @@
 #include <arpa/inet.h>
 
 #include <err.h>
+#include <errno.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
@@ -61,7 +62,9 @@ ffddd_open_socket(GError **err)
 	if (status == -1) {
 		warn(_("Failed to create address"));
 		g_set_error(err, FFDDD_CONNECTION_ERROR,
-		    FFDDD_CONNECTION_ERROR_ADDRESS, _("Failed to create address"));
+		    FFDDD_CONNECTION_ERROR_ADDRESS, _("Failed to create address: %s"),
+		    g_strerror(errno));
+
 		return (-1);
 	}
 
@@ -72,17 +75,19 @@ ffddd_open_socket(GError **err)
 		warn(_("Failed to create socket"));
 		freeaddrinfo(serv_info);
 		g_set_error(err, FFDDD_CONNECTION_ERROR,
-		    FFDDD_CONNECTION_ERROR_SOCKET, _("Failed to create socket"));
+		    FFDDD_CONNECTION_ERROR_SOCKET, _("Failed to create socket: %s"),
+		    g_strerror(errno));
 		return (-1);
 	}
 
 	status = connect(sockfd, serv_info->ai_addr, serv_info->ai_addrlen);
 
 	if (status == -1) {
-		warn(_("Failed to create socket"));
+		warn(_("Failed to create connect"));
 		freeaddrinfo(serv_info);
 		g_set_error(err, FFDDD_CONNECTION_ERROR,
-		    FFDDD_CONNECTION_ERROR_CONNECT, _("Failed to connect"));
+		    FFDDD_CONNECTION_ERROR_CONNECT, _("Failed to connect: %s"),
+		    g_strerror(errno));
 		return (-1);
 	}
 
@@ -95,5 +100,5 @@ GQuark
 ffddd_connection_error_quark()
 {
 
-	return (ffddd_connection_error_quark("ffddd-connection-error-quark"));
+	return (g_quark_from_static_string("ffddd-connection-error-quark"));
 }

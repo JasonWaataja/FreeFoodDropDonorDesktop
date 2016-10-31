@@ -89,6 +89,9 @@ ffddd_giveaway_dialog_init(FfdddGiveawayDialog *dialog)
 	g_signal_connect_swapped(priv->add_food_button, "clicked",
 	    G_CALLBACK(ffddd_giveaway_dialog_on_add_item_button_clicked),
 	    dialog);
+	g_signal_connect_swapped(priv->item_entry, "activate",
+	    G_CALLBACK(ffddd_giveaway_dialog_on_add_item_button_clicked),
+	    dialog);
 }
 
 static void

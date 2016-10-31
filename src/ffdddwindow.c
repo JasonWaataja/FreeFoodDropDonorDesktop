@@ -33,6 +33,7 @@
 
 #include "ffdddwindow.h"
 #include "ffdddgiveawaydialog.h"
+#include "networking.h"
 
 struct _FfdddWindow {
 	GtkApplicationWindow parent;
@@ -259,6 +260,8 @@ ffddd_window_on_send_button_clicked(FfdddWindow *window)
 	FfdddWindowPrivate *priv;
 	GtkWidget *dialog;
 	int giveaway_count;
+	GError *err;
+	int sockfd;
 
 	priv = ffddd_window_get_instance_private(window);
 	giveaway_count =
@@ -269,6 +272,19 @@ ffddd_window_on_send_button_clicked(FfdddWindow *window)
 		dialog = gtk_message_dialog_new(GTK_WINDOW(window),
 		    GTK_DIALOG_MODAL, GTK_MESSAGE_WARNING, GTK_BUTTONS_OK,
 		    _("You have to have at least one giveaway to send."));
+		gtk_dialog_run(GTK_DIALOG(dialog));
+		gtk_widget_destroy(dialog);
+		return;
+	}
+
+	err = NULL;
+	sockfd = ffddd_open_socket(&err);
+
+	if (err != NULL) {
+		dialog = gtk_message_dialog_new(GTK_WINDOW(window),
+		    GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK, "%s",
+		    err->message);
+		g_error_free(err);
 		gtk_dialog_run(GTK_DIALOG(dialog));
 		gtk_widget_destroy(dialog);
 		return;
