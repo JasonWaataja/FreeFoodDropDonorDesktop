@@ -167,6 +167,8 @@ ffddd_get_location(const char *address, double *lat, double *lon)
 		/*}*/
 	/*}*/
 
+	printf("%s\n", return_str);
+
 	/*cur_line++;*/
 	/*cur_char = g_strrstr(*cur_line, "\"lat\" : ");*/
 	/*cur_char++;*/
@@ -176,8 +178,6 @@ ffddd_get_location(const char *address, double *lat, double *lon)
 	/**lon = strtod(cur_char, NULL);*/
 
 	/*printf("%f %f\n", *lat, *lon);*/
-
-	
 
 
 	curl_easy_cleanup(curl);
@@ -206,4 +206,22 @@ ffddd_curl_write_func(void *buf, size_t size, size_t nmemb, char **message)
 	(*message)[new_len] = '\0';
 
 	return (size * nmemb);
+}
+
+int
+ffddd_get_location_from_json(const char *json, double *lat, double *lon)
+{
+	jsmn_parser parser;
+	jsmntok_t *tokens;
+	jsmntok_t *parent_tok;
+	int tok_count;
+
+	jsmn_init(&parser);
+	tok_count = jsmn_parse(&parser, json, sizeof(json), NULL, 0);
+	
+	if (tok_count <= 0)
+		return (-1);
+
+	tokens = g_new(jsmntok_t, tok_count);
+	jsmn_parse(&parser, json, strlen(json), tokens, tok_count);
 }

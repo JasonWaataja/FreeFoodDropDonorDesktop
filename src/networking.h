@@ -54,4 +54,7 @@ int	ffddd_get_location(const char *address, double *lat, double *lon);
 size_t	ffddd_curl_write_func(void *buf, size_t size, size_t nmemb, char
     **message); 
 
+int	ffddd_get_location_from_json(const char *json, double *lat, double
+    *lon);
+
 #endif /* !_NETWORKING_H_ */
