@@ -44,8 +44,10 @@
 #include <string.h>
 #include <err.h>
 #include <glib/gi18n.h>
+#include <stdlib.h>
 
 #include "networking.h"
+#include "jsmn.h"
 
 int
 ffddd_open_socket(GError **err)
@@ -112,7 +114,9 @@ ffddd_get_location(const char *address, double *lat, double *lon)
 	char *addr_formatted, *current_char, *query_str, *return_str;
 	GList *lines;
 	gchar **line_array;
-	gchar *curr_line;
+	gchar **cur_line;
+	gchar *cur_char;
+	gboolean found_location;
 
 	curl = curl_easy_init();
 
@@ -134,8 +138,8 @@ ffddd_get_location(const char *address, double *lat, double *lon)
 			*current_char = '+';
 	}
 
-	query_str = g_strconcat(FFDDD_GOOGLE_URL, "?address=", addr_formatted, "&key=",
-	    FFDDD_GOOGLE_KEY, NULL);
+	query_str = g_strconcat(FFDDD_GOOGLE_URL, "?address=", addr_formatted,
+	    "&key=", FFDDD_GOOGLE_KEY, NULL);
 
 	curl_easy_setopt(curl, CURLOPT_URL, query_str);
 
@@ -150,13 +154,37 @@ ffddd_get_location(const char *address, double *lat, double *lon)
 		return (-1);
 	}
 
-	lines = NULL;
-	printf("%s\n", return_str);
+	/*lines = NULL;*/
+	/*found_location = FALSE;*/
+	/*line_array = g_strsplit(return_str, "\n", 0);*/
+
+	/*for (cur_line = &line_array[0]; !found_location && *cur_line != NULL;)*/
+	/*{*/
+		/*if (g_strrstr(*cur_line, "location") != NULL) {*/
+			/*found_location = TRUE;*/
+		/*} else {*/
+			/*cur_line++;*/
+		/*}*/
+	/*}*/
+
+	/*cur_line++;*/
+	/*cur_char = g_strrstr(*cur_line, "\"lat\" : ");*/
+	/*cur_char++;*/
+	/**lat = strtod(cur_char, NULL);*/
+	/*cur_line++;*/
+	/*cur_char = g_strrstr(*cur_line, "\"lng\" : ");*/
+	/**lon = strtod(cur_char, NULL);*/
+
+	/*printf("%f %f\n", *lat, *lon);*/
+
+	
+
 
 	curl_easy_cleanup(curl);
 
 	g_free(addr_formatted);
 	g_free(query_str);
+	g_free(return_str);
 
 	return (1);
 }

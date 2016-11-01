@@ -1,5 +1,5 @@
 set (SOURCES main.c ffdddapplication.c ffdddwindow.c networking.c
-	ffdddgiveawaydialog.c ffdddgiveaway.c)
+	ffdddgiveawaydialog.c ffdddgiveaway.c jsmn.c)
 add_executable (ffddd ${SOURCES} resources.c)
 
 find_package (PkgConfig REQUIRED)

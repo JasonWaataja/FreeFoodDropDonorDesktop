@@ -47,7 +47,8 @@ main(int argc, char *argv[])
 	/*status = g_application_run(G_APPLICATION(app), argc, argv);*/
 	/*g_object_unref(G_OBJECT(app));*/
 
-	ffddd_get_location("1156 N 76th st Seattle WA", NULL, NULL);
+	double a, b;
+	ffddd_get_location("1156 N 76th st Seattle WA", &a, &b);
 
 	curl_global_cleanup();
 
